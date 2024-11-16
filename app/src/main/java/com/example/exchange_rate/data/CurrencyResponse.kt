@@ -1,4 +1,4 @@
-package com.example.lab4.data
+package com.example.exchange_rate.data
 
 import com.google.gson.annotations.SerializedName
 

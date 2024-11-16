@@ -1,6 +1,6 @@
-package com.example.lab4
+package com.example.exchange_rate
 
-import com.example.lab4.data.CurrencyResponse
+import com.example.exchange_rate.data.CurrencyResponse
 import retrofit2.http.GET
 
 interface CurrencyApi {

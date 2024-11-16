@@ -1,7 +1,7 @@
-package com.example.lab4
+package com.example.exchange_rate
 
 import android.util.Log
-import com.example.lab4.data.Currency
+import com.example.exchange_rate.data.Currency
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

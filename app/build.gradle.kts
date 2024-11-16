@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.lab4"
+    namespace = "com.example.exchange_rate"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.lab4"
+        applicationId = "com.example.exchange_rate"
         minSdk = 31
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

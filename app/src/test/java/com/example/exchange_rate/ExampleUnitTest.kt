@@ -1,4 +1,4 @@
-package com.example.lab4
+package com.example.exchange_rate
 
 import org.junit.Test
 
