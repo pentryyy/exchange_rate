@@ -1,73 +1,96 @@
 package com.example.lab4
 
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
-class CurrencyService {
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("https://www.cbr-xml-daily.ru")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val api = retrofit.create(Api::class.java)
-
-    suspend fun fetchData(): Double {
-        try {
-            val response = api.getCurrencyData().execute()
-            if (response.isSuccessful) {
-                val currencyData = response.body()
-                val usdValue = currencyData?.getAsJsonObject("Valute")?.getAsJsonObject("USD")?.get("Value")?.asDouble
-                return usdValue ?: 0.0
-            }
-            else {
-                Log.e("CurrencyService", "Error fetching data: ${response.code()}")
-            }
-        } catch (error: Throwable) {
-            Log.e("CurrencyService", "Error fetching data: $error")
-        }
-        return 0.0
-    }
-
-    private interface Api {
-        @GET("/daily_json.js")
-        fun getCurrencyData(): Call<JsonObject>
-    }
-}
+import android.util.Log
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.Toast
+import android.widget.Toolbar
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonObject
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
 
 class MainActivity : AppCompatActivity() {
+    private val currencyService = CurrencyService() // Создаем экземпляр CurrencyService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val textView5 = findViewById<TextView>(R.id.textView5)
-        val currentDate = Date()
-        val dateFormat = SimpleDateFormat("d MMMM yyyy года", Locale("ru"))
-        val formattedDate = dateFormat.format(currentDate)
-        textView5.text = formattedDate
+        val constraintLayout = findViewById<ConstraintLayout>(R.id.СonstraintLayout1)
+        constraintLayout.setBackgroundColor(Color.WHITE)
 
+        val spinner2 = findViewById<Spinner>(R.id.spinner2)
         val textView4 = findViewById<TextView>(R.id.textView4)
-        val currencyService = CurrencyService()
+        val textView5 = findViewById<TextView>(R.id.textView5)
 
-        runBlocking {
-            GlobalScope.launch(Dispatchers.IO) {
-                val usdValue = currencyService.fetchData()
-                textView4.text = String.format("%.2f", usdValue)+" RUR"
-            }.join()
+        lifecycleScope.launch {
+            try {
+                // Получение курса валют и их названий
+                val currencies = currencyService.fetchCurrencies()
+                val currencyNames = currencyService.fetchValuteNames()
+
+                // Настройка адаптера для Spinner
+                val adapter = ArrayAdapter(
+                    this@MainActivity,
+                    android.R.layout.simple_spinner_item,
+                    currencyNames
+                )
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinner2.adapter = adapter
+
+                // Устанавливаем валюту по умолчанию
+                val defaultCurrency = "USD"
+                val defaultCurrencyPosition = currencyNames.indexOf(defaultCurrency)
+                spinner2.setSelection(defaultCurrencyPosition)
+
+                // Отображение обменного курса валюты по умолчанию
+                textView4.text = "1 $defaultCurrency = ${currencies[defaultCurrency]?.value} RUB"
+
+                // Задаем текущую дату
+                val currentDate = Date()
+                val dateFormat = SimpleDateFormat("d MMMM yyyy года", Locale("ru"))
+                val formattedDate = dateFormat.format(currentDate)
+                textView5.text = "Курс валют на $formattedDate"
+
+                // Обработчик изменений в Spinner
+                spinner2.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        val selectedCurrency = currencyNames[position]
+                        textView4.text =
+                            "1 $selectedCurrency = ${currencies[selectedCurrency]?.value} RUB"
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>) {
+                        // Не делаем ничего, если ничего не выбрано
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error: ${e.message}")
+            }
         }
     }
 }
