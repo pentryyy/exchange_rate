@@ -5,36 +5,44 @@ import com.example.exchange_rate.data.Currency
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class CurrencyService() {
+import com.example.exchange_rate.data.CurrencyResponse
 
-    // Инициализация Retrofit
+class CurrencyService {
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://www.cbr-xml-daily.ru")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    // Создание API интерфейса
     private val api = retrofit.create(CurrencyApi::class.java)
 
-    // Метод для получения данных о валютах
+    private var cachedResponse: CurrencyResponse? = null
+
     suspend fun fetchCurrencies(): Map<String, Currency> {
-        try {
-            val response = api.getCurrencyData()
-            return response.valute // Возвращаем коллекцию валют
+        return try {
+            if (cachedResponse == null) {
+                cachedResponse = api.getCurrencyData()
+            }
+            cachedResponse?.valute ?: emptyMap() // Если valute == null, возвращаем пустую коллекцию
         } catch (e: Exception) {
             Log.e("CurrencyService", "Error: ${e.message}")
-            return emptyMap() // В случае ошибки возвращаем пустую коллекцию
+            emptyMap()
         }
     }
 
-    // Метод для списка имен валют
     suspend fun fetchValuteNames(): List<String> {
         return try {
-            val response = api.getCurrencyData()
-            return response.valute?.keys?.toList() ?: emptyList() // Возвращаем список валют
+            if (cachedResponse == null) {
+                cachedResponse = api.getCurrencyData()
+            }
+            cachedResponse?.valute?.keys?.toList() ?: emptyList() // Если valute == null, возвращаем пустой список
         } catch (e: Exception) {
             Log.e("fetchValuteNames", "Error: ${e.message}")
-            return emptyList() // В случае ошибки возвращаем пустой список
+            emptyList()
         }
+    }
+
+    fun clearCache() {
+        cachedResponse = null
     }
 }
