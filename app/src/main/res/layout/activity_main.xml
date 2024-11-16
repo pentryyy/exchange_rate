@@ -71,7 +71,7 @@
         tools:ignore="MissingConstraints" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textView3"
         android:layout_width="246dp"
         android:layout_height="123dp"
         android:text="Выберите валюту"

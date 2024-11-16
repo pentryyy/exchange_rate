@@ -1,6 +1,7 @@
 package com.example.exchange_rate
 
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +16,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 
 class MainActivity : AppCompatActivity() {
@@ -28,9 +30,17 @@ class MainActivity : AppCompatActivity() {
         constraintLayout.setBackgroundColor(Color.WHITE)
 
         val spinner2 = findViewById<Spinner>(R.id.spinner2)
+        val textView3 = findViewById<TextView>(R.id.textView3)
         val textView4 = findViewById<TextView>(R.id.textView4)
         val textView5 = findViewById<TextView>(R.id.textView5)
 
+        textView3.setTextColor(Color.BLACK)
+        textView4.setTextColor(Color.BLACK)
+        textView5.setTextColor(Color.BLACK)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.statusBarColor = ContextCompat.getColor(this, R.color.purple_toolbar)
+        }
         lifecycleScope.launch {
             try {
                 // Получение курса валют и их названий
@@ -51,8 +61,13 @@ class MainActivity : AppCompatActivity() {
                 val defaultCurrencyPosition = currencyNames.indexOf(defaultCurrency)
                 spinner2.setSelection(defaultCurrencyPosition)
 
-                // Отображение обменного курса валюты по умолчанию
-                textView4.text = "1 $defaultCurrency = ${currencies[defaultCurrency]?.value} RUB"
+                // Отображение обменного курса валюты и номинала по умолчанию
+                val defaultCurrencyData = currencies[defaultCurrency]
+                if (defaultCurrencyData != null) {
+                    val normalizedValue = defaultCurrencyData.value / defaultCurrencyData.nominal
+                    textView4.text =
+                        "1 $defaultCurrency = $normalizedValue RUB (Nominal: ${defaultCurrencyData.nominal})"
+                }
 
                 // Задаем текущую дату
                 val currentDate = Date()
@@ -69,8 +84,13 @@ class MainActivity : AppCompatActivity() {
                         id: Long
                     ) {
                         val selectedCurrency = currencyNames[position]
-                        textView4.text =
-                            "1 $selectedCurrency = ${currencies[selectedCurrency]?.value} RUB"
+                        val selectedCurrencyData = currencies[selectedCurrency]
+                        if (selectedCurrencyData != null) {
+                            val normalizedValue =
+                                selectedCurrencyData.value / selectedCurrencyData.nominal
+                            textView4.text =
+                                "1 $selectedCurrency = $normalizedValue RUB"
+                        }
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>) {
