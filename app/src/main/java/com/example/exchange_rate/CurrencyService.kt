@@ -16,33 +16,13 @@ class CurrencyService {
 
     private val api = retrofit.create(CurrencyApi::class.java)
 
-    private var cachedResponse: CurrencyResponse? = null
-
     suspend fun fetchCurrencies(): Map<String, Currency> {
         return try {
-            if (cachedResponse == null) {
-                cachedResponse = api.getCurrencyData()
-            }
-            cachedResponse?.valute ?: emptyMap() // Если valute == null, возвращаем пустую коллекцию
+            val response = api.getCurrencyData()
+            response.valute ?: emptyMap()  // Если valute == null, возвращаем пустую коллекцию
         } catch (e: Exception) {
             Log.e("CurrencyService", "Error: ${e.message}")
             emptyMap()
         }
-    }
-
-    suspend fun fetchValuteNames(): List<String> {
-        return try {
-            if (cachedResponse == null) {
-                cachedResponse = api.getCurrencyData()
-            }
-            cachedResponse?.valute?.keys?.toList() ?: emptyList() // Если valute == null, возвращаем пустой список
-        } catch (e: Exception) {
-            Log.e("fetchValuteNames", "Error: ${e.message}")
-            emptyList()
-        }
-    }
-
-    fun clearCache() {
-        cachedResponse = null
     }
 }

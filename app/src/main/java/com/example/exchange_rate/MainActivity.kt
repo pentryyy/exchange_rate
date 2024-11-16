@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 // Получение курса валют и их названий
                 val currencies = currencyService.fetchCurrencies()
-                val currencyNames = currencyService.fetchValuteNames()
+                val currencyNames: List<String> = currencies.keys.toList()
 
                 // Настройка адаптера для Spinner
                 val adapter = ArrayAdapter(
